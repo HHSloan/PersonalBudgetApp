@@ -1,8 +1,8 @@
-# 💰 SmartBudget — Personal Finance & Budget Web Application
+# 💰 PersonalBudgetApp — Personal Finance & Budget Web Application
 
 A modern, responsive, full-featured **Personal Budget & Expense Tracking Web Application** built with **React**, **TypeScript**, **Vite**, **Tailwind CSS**, and **Recharts**.
 
-![SmartBudget App Banner](https://img.shields.io/badge/Status-Production--Ready-emerald?style=for-the-badge)
+![PersonalBudgetApp Banner](https://img.shields.io/badge/Status-Production--Ready-emerald?style=for-the-badge)
 ![Tech Stack](https://img.shields.io/badge/Stack-React%20%7C%20Vite%20%7C%20TypeScript%20%7C%20TailwindCSS-blue?style=for-the-badge)
 
 ---

@@ -202,7 +202,7 @@ export const App: React.FC = () => {
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© {new Date().getFullYear()} SmartBudget App. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} PersonalBudgetApp. All rights reserved.</p>
           <p className="flex items-center gap-1">
             <span>Built with React, Vite, Tailwind CSS & Recharts</span>
           </p>

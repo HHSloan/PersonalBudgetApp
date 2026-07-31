@@ -1,9 +1,9 @@
 import { Transaction, BudgetLimit, ThemeMode } from '../types/budget';
 import { INITIAL_TRANSACTIONS, DEFAULT_BUDGET_LIMITS } from './sampleData';
 
-const TRANSACTIONS_KEY = 'smart_budget_transactions_v1';
-const BUDGET_LIMITS_KEY = 'smart_budget_limits_v1';
-const THEME_KEY = 'smart_budget_theme_v1';
+const TRANSACTIONS_KEY = 'personal_budget_app_transactions_v1';
+const BUDGET_LIMITS_KEY = 'personal_budget_app_limits_v1';
+const THEME_KEY = 'personal_budget_app_theme_v1';
 
 export const loadTransactions = (): Transaction[] => {
   try {
