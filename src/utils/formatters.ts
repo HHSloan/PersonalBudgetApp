@@ -26,8 +26,6 @@ export const INCOME_CATEGORIES: Category[] = [
   'Misc Income',
   'Camille Total Monthly Pre-Tax Income',
   'Harrison Total Monthly Pre-Tax Income',
-  'Income',
-  'Investments',
 ];
 
 export const EXPENSE_CATEGORIES: Category[] = [
@@ -127,7 +125,5 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   'Transportation': '#8b5cf6',
   'Shopping': '#f97316',
   'Health & Fitness': '#10b981',
-  'Income': '#22c55e',
-  'Investments': '#14b8a6',
   'Miscellaneous': '#64748b',
 };

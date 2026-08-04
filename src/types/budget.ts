@@ -45,8 +45,6 @@ export type Category =
   | 'Transportation'
   | 'Shopping'
   | 'Health & Fitness'
-  | 'Income'
-  | 'Investments'
   | 'Miscellaneous'
   // Income Subcategories
   | 'Camille Total Monthly Pre-Tax Income'
