@@ -10,7 +10,13 @@ export type Category =
   | 'Health & Fitness'
   | 'Income'
   | 'Investments'
-  | 'Miscellaneous';
+  | 'Miscellaneous'
+  | 'Camille Total Monthly Pre-Tax Income'
+  | 'Harrison Total Monthly Pre-Tax Income'
+  | 'Gross Income'
+  | 'Misc Income'
+  | 'Camille Monthly Take-Home Pay'
+  | 'Harrison Monthly Take-Home Pay';
 
 export interface Transaction {
   id: string;

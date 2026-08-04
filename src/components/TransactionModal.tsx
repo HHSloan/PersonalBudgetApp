@@ -116,9 +116,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 type="button"
                 onClick={() => {
                   setType('expense');
-                  if (category === 'Income' || category === 'Investments') {
-                    setCategory('Food & Dining');
-                  }
+                  setCategory('Food & Dining');
                 }}
                 className={`py-2 rounded-lg text-xs font-extrabold transition-all ${
                   type === 'expense'
@@ -132,7 +130,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 type="button"
                 onClick={() => {
                   setType('income');
-                  setCategory('Income');
+                  setCategory('Harrison Monthly Take-Home Pay');
                 }}
                 className={`py-2 rounded-lg text-xs font-extrabold transition-all ${
                   type === 'income'

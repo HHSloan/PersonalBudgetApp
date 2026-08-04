@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Transaction, BudgetLimit } from '../types/budget';
-import { formatCurrency, CATEGORIES, CATEGORY_COLORS } from '../utils/formatters';
+import { formatCurrency, EXPENSE_CATEGORIES, CATEGORY_COLORS } from '../utils/formatters';
 import { BarChart3, Download, Upload, RotateCcw, Award, Percent, Layers } from 'lucide-react';
 
 interface AnalyticsViewProps {
@@ -28,8 +28,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
   const totalExpense = Object.values(expenseByCategory).reduce((sum, v) => sum + v, 0);
 
-  // Sort categories by total spent descending
-  const categoryAnalysis = CATEGORIES.filter((c) => c !== 'Income' && c !== 'Investments')
+  // Sort expense categories by total spent descending
+  const categoryAnalysis = EXPENSE_CATEGORIES
     .map((cat) => {
       const spent = expenseByCategory[cat] || 0;
       const limitObj = budgetLimits.find((b) => b.category === cat);

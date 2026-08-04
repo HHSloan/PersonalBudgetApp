@@ -14,12 +14,21 @@ export const DEFAULT_BUDGET_LIMITS: BudgetLimit[] = [
 export const INITIAL_TRANSACTIONS: Transaction[] = [
   {
     id: 'tx-1',
-    title: 'Monthly Salary Deposit',
+    title: 'Harrison Take-Home Salary Deposit',
     amount: 5200,
     type: 'income',
-    category: 'Income',
+    category: 'Harrison Monthly Take-Home Pay',
     date: '2026-07-01',
     note: 'Primary salary payout',
+  },
+  {
+    id: 'tx-1b',
+    title: 'Camille Take-Home Salary Deposit',
+    amount: 4800,
+    type: 'income',
+    category: 'Camille Monthly Take-Home Pay',
+    date: '2026-07-01',
+    note: 'Camille monthly paycheck',
   },
   {
     id: 'tx-2',
@@ -53,7 +62,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     title: 'Freelance Design Consultation',
     amount: 850,
     type: 'income',
-    category: 'Income',
+    category: 'Misc Income',
     date: '2026-07-10',
     note: 'UI mockup deliverables',
   },

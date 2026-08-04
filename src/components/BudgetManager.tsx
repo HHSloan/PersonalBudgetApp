@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Transaction, BudgetLimit, Category } from '../types/budget';
-import { formatCurrency, CATEGORIES, CATEGORY_COLORS } from '../utils/formatters';
+import { formatCurrency, EXPENSE_CATEGORIES, CATEGORY_COLORS } from '../utils/formatters';
 import { PieChart, Edit3, Save, Check, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 interface BudgetManagerProps {
@@ -25,8 +25,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       return acc;
     }, {} as Record<string, number>);
 
-  // Filter expense-relevant categories (excluding Income)
-  const expenseCategories = CATEGORIES.filter((cat) => cat !== 'Income' && cat !== 'Investments');
+  // Filter expense-relevant categories
+  const expenseCategories = EXPENSE_CATEGORIES;
 
   const totalMonthlyBudget = budgetLimits
     .filter((b) => expenseCategories.includes(b.category))
