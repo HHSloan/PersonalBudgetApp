@@ -63,125 +63,73 @@ const autoCategorize = (description: string, isCredit: boolean = false): { categ
 
   // If marked as Credit (CR) or payment
   if (isCredit || upper.includes('PAYMENT: THANK YOU') || upper.includes('STATEMENT CREDIT') || upper.includes('MERCHANDISE/SERVICE RETURN') || upper.includes('CREDIT ADJUSTMENT')) {
-    if (upper.includes('RETURN') || upper.includes('CREDIT')) {
-      return { category: 'Miscellaneous', type: 'income' };
+    if (upper.includes('CAMI')) {
+      return { category: 'Camille Monthly Take-Home Pay', type: 'income' };
     }
-    return { category: 'Income', type: 'income' };
+    if (upper.includes('HARR')) {
+      return { category: 'Harrison Monthly Take-Home Pay', type: 'income' };
+    }
+    return { category: 'Misc Income', type: 'income' };
   }
 
   const type: TransactionType = 'expense';
 
-  // Expense categories based on keywords
-  if (upper.includes('RENT') || upper.includes('MORTGAGE') || upper.includes('HOUSING') || upper.includes('HOTEL') || upper.includes('AUTOGRAPH') || upper.includes('GODLEY')) {
-    return { category: 'Housing', type };
+  // Giving & Generosity
+  if (upper.includes('CHRIST COVENANT')) return { category: 'Christ Covenant', type };
+  if (upper.includes('PERSECUTED')) return { category: 'Help the Persecuted', type };
+  if (upper.includes('THINKING OUT LOUD')) return { category: 'Thinking Out Loud', type };
+  if (upper.includes('KAULA')) return { category: 'Kaula Tree', type };
+  if (upper.includes('K-LIFE') || upper.includes('KLIFE')) return { category: 'K-Life', type };
+
+  // Utilities & Internet
+  if (upper.includes('RED OAK SANITATION') || upper.includes('SAWNEE ELECTRIC') || upper.includes('POWER') || upper.includes('WATER') || upper.includes('SEWER') || upper.includes('GAS SOUTH') || upper.includes('SANITATION')) {
+    return { category: 'Utilities (Electricity/Gas/Water/Trash)', type };
+  }
+  if (upper.includes('COMCAST') || upper.includes('XFINITY') || upper.includes('SPOTIFY') || upper.includes('NETFLIX') || upper.includes('HULU') || upper.includes('INTERNET') || upper.includes('SPECTRUM')) {
+    return { category: 'Internet/TV/Spotify', type };
   }
 
-  if (
-    upper.includes('KROGER') ||
-    upper.includes('VONS') ||
-    upper.includes('PUBLIX') ||
-    upper.includes('TRADER') ||
-    upper.includes('WHOLE FOODS') ||
-    upper.includes('FOUR SQUARE') ||
-    upper.includes('FRESH CHOICE') ||
-    upper.includes('CAFE') ||
-    upper.includes('COFFEE') ||
-    upper.includes('STARBUCKS') ||
-    upper.includes('DUNKIN') ||
-    upper.includes('SALT AND STRAW') ||
-    upper.includes('CHICK-FIL-A') ||
-    upper.includes('NANDOS') ||
-    upper.includes('CRUMBL') ||
-    upper.includes('VERVE') ||
-    upper.includes('BISTRO') ||
-    upper.includes('RESTAURANT') ||
-    upper.includes('BURGER') ||
-    upper.includes('FERGBURGER') ||
-    upper.includes('BOSHAMPS') ||
-    upper.includes('PIES') ||
-    upper.includes('JOHNNY') ||
-    upper.includes('GOOD EATING') ||
-    upper.includes('VIDA') ||
-    upper.includes('WRIGLEY')
-  ) {
-    return { category: 'Food & Dining', type };
+  // Housing
+  if (upper.includes('RENT') || upper.includes('MORTGAGE') || upper.includes('HOUSING') || upper.includes('ESCROW')) {
+    return { category: 'Mortgage Payment', type };
   }
 
-  if (
-    upper.includes('RED OAK SANITATION') ||
-    upper.includes('SAWNEE ELECTRIC') ||
-    upper.includes('POWER') ||
-    upper.includes('WATER') ||
-    upper.includes('SEWER') ||
-    upper.includes('COMCAST') ||
-    upper.includes('XFINITY') ||
-    upper.includes('VERIZON') ||
-    upper.includes('AT&T') ||
-    upper.includes('UTILITY') ||
-    upper.includes('SANITATION')
-  ) {
-    return { category: 'Utilities & Bills', type };
+  // Insurance & Phone
+  if (upper.includes('VERIZON') || upper.includes('AT&T') || upper.includes('CELL') || upper.includes('T-MOBILE')) {
+    return { category: 'Cell Phone', type };
+  }
+  if (upper.includes('JEWLERS MUTUAL') || upper.includes('JEWELERS')) {
+    return { category: 'Jewlers Mutual Insurance', type };
   }
 
-  if (
-    upper.includes('SOUTHWEST') ||
-    upper.includes('DELTA') ||
-    upper.includes('UNITED') ||
-    upper.includes('QANTAS') ||
-    upper.includes('UBER') ||
-    upper.includes('LYFT') ||
-    upper.includes('CHEVRON') ||
-    upper.includes('SHELL') ||
-    upper.includes('BP#') ||
-    upper.includes('RACETRAC') ||
-    upper.includes('GAS') ||
-    upper.includes('CIRCLEK') ||
-    upper.includes('TRANSIT') ||
-    upper.includes('RIDEYELLOW') ||
-    upper.includes('AIRLINES')
-  ) {
-    return { category: 'Transportation', type };
+  // Vehicle
+  if (upper.includes('CHEVRON') || upper.includes('SHELL') || upper.includes('BP#') || upper.includes('RACETRAC') || upper.includes('EXXON') || upper.includes('GASOLINE')) {
+    return { category: 'Auto Gas', type };
+  }
+  if (upper.includes('AUTO REPAIR') || upper.includes('TIRE') || upper.includes('MAINTENANCE') || upper.includes('CAR WASH') || upper.includes('SPEED AUTO')) {
+    return { category: 'Auto Maintenance', type };
+  }
+  if (upper.includes('CAR PAYMENT') || upper.includes('AUTO FINANCE') || upper.includes('TOYOTA FINANCIAL') || upper.includes('HONDA FINANCIAL')) {
+    return { category: 'Car Payment', type };
   }
 
-  if (
-    upper.includes('AMAZON') ||
-    upper.includes('TARGET') ||
-    upper.includes('WALMART') ||
-    upper.includes('PATAGONIA') ||
-    upper.includes('HOBBY LOBBY') ||
-    upper.includes('PAINTED PICKLE') ||
-    upper.includes('HUDSONS') ||
-    upper.includes('CLOTHING') ||
-    upper.includes('STORE') ||
-    upper.includes('SMITHS CRAFT')
-  ) {
-    return { category: 'Shopping', type };
+  // Food & Dining
+  if (upper.includes('KROGER') || upper.includes('VONS') || upper.includes('PUBLIX') || upper.includes('TRADER') || upper.includes('WHOLE FOODS') || upper.includes('FOUR SQUARE') || upper.includes('GROCERY') || upper.includes('FRESH CHOICE') || upper.includes('SUPERMARKET')) {
+    return { category: 'Groceries/Food', type };
+  }
+  if (upper.includes('CAFE') || upper.includes('COFFEE') || upper.includes('STARBUCKS') || upper.includes('DUNKIN') || upper.includes('SALT AND STRAW') || upper.includes('CHICK-FIL-A') || upper.includes('NANDOS') || upper.includes('CRUMBL') || upper.includes('VERVE') || upper.includes('BISTRO') || upper.includes('RESTAURANT') || upper.includes('BURGER') || upper.includes('FERGBURGER') || upper.includes('BOSHAMPS') || upper.includes('WRIGLEY') || upper.includes('EATING OUT') || upper.includes('UBER EATS')) {
+    return { category: 'Eating Out', type };
   }
 
-  if (
-    upper.includes('SPOTIFY') ||
-    upper.includes('NETFLIX') ||
-    upper.includes('ANCESTRYCOM') ||
-    upper.includes('KIWI PARK') ||
-    upper.includes('SKYLINE') ||
-    upper.includes('WANAKA LAVENDER') ||
-    upper.includes('CINEMA') ||
-    upper.includes('TICKET')
-  ) {
-    return { category: 'Entertainment', type };
+  // Personal & Health
+  if (upper.includes('OURARING') || upper.includes('GALILEO MEDICAL') || upper.includes('DOCTOR') || upper.includes('HEALTH') || upper.includes('CLINIC') || upper.includes('PHARMACY') || upper.includes('CVS')) {
+    return { category: 'Health Expenses', type };
+  }
+  if (upper.includes('CLOTHING') || upper.includes('HAIR') || upper.includes('SALON') || upper.includes('BARBER') || upper.includes('NIKE') || upper.includes('STORE')) {
+    return { category: 'Clothing/Hair', type };
   }
 
-  if (
-    upper.includes('OURARING') ||
-    upper.includes('GALILEO MEDICAL') ||
-    upper.includes('GYM') ||
-    upper.includes('PHARMACY') ||
-    upper.includes('DOCTOR')
-  ) {
-    return { category: 'Health & Fitness', type };
-  }
-
-  return { category: 'Miscellaneous', type };
+  return { category: 'Misc/Entertainment', type };
 };
 
 const FIDELITY_STATEMENT_SAMPLE = `HARRISON S - 5308: Purchases and Other Debits

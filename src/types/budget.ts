@@ -1,6 +1,43 @@
 export type TransactionType = 'income' | 'expense';
 
 export type Category =
+  // Giving & Generosity
+  | 'Christ Covenant'
+  | 'Help the Persecuted'
+  | 'Thinking Out Loud'
+  | 'Kaula Tree'
+  | 'K-Life'
+  | 'Misc Giving/Discipleship/Generosity'
+  // Savings & Investments
+  | 'Camille 401k Witholdings'
+  | 'Harrison 401k Withholdings'
+  | 'HSA Withholdings'
+  | 'Roth IRA Contribution: Camille'
+  | 'Roth IRA Contribution: Harrison'
+  | 'Personal Savings'
+  | 'Adoption Fund'
+  // Housing & Living
+  | 'Mortgage Payment'
+  | 'Utilities (Electricity/Gas/Water/Trash)'
+  | 'Internet/TV/Spotify'
+  | 'House Expenses'
+  // Insurance
+  | 'Homeowners Insurance'
+  | 'Auto Insurance'
+  | 'Umbrella Policy'
+  | 'Jewlers Mutual Insurance'
+  // Vehicle & Transportation
+  | 'Car Payment'
+  | 'Auto Gas'
+  | 'Auto Maintenance'
+  // Daily Living & Personal
+  | 'Cell Phone'
+  | 'Groceries/Food'
+  | 'Eating Out'
+  | 'Clothing/Hair'
+  | 'Health Expenses'
+  | 'Misc/Entertainment'
+  // Legacy / Fallbacks
   | 'Housing'
   | 'Food & Dining'
   | 'Utilities & Bills'
@@ -11,6 +48,7 @@ export type Category =
   | 'Income'
   | 'Investments'
   | 'Miscellaneous'
+  // Income Subcategories
   | 'Camille Total Monthly Pre-Tax Income'
   | 'Harrison Total Monthly Pre-Tax Income'
   | 'Gross Income'
