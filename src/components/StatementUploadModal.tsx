@@ -26,6 +26,7 @@ const MONTH_MAP: Record<string, string> = {
 };
 
 const parseDateStringToISO = (dateStr: string): string | null => {
+  if (!dateStr) return null;
   const clean = dateStr.trim();
   const currentYear = new Date().getFullYear();
 
@@ -41,7 +42,7 @@ const parseDateStringToISO = (dateStr: string): string | null => {
     }
   }
 
-  // Pattern 2: 08/02/2026 or 8/2/2026
+  // Pattern 2: 7/19/2026 or 07/19/2026 or 8/2/2026
   const slashMatch = clean.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slashMatch) {
     const mm = slashMatch[1].padStart(2, '0');
@@ -117,15 +118,15 @@ const autoCategorize = (description: string, isCredit: boolean = false): { categ
   if (upper.includes('KROGER') || upper.includes('VONS') || upper.includes('PUBLIX') || upper.includes('TRADER') || upper.includes('WHOLE FOODS') || upper.includes('FOUR SQUARE') || upper.includes('GROCERY') || upper.includes('FRESH CHOICE') || upper.includes('SUPERMARKET')) {
     return { category: 'Groceries/Food', type };
   }
-  if (upper.includes('CAFE') || upper.includes('COFFEE') || upper.includes('STARBUCKS') || upper.includes('DUNKIN') || upper.includes('SALT AND STRAW') || upper.includes('CHICK-FIL-A') || upper.includes('NANDOS') || upper.includes('CRUMBL') || upper.includes('VERVE') || upper.includes('BISTRO') || upper.includes('RESTAURANT') || upper.includes('BURGER') || upper.includes('FERGBURGER') || upper.includes('BOSHAMPS') || upper.includes('WRIGLEY') || upper.includes('EATING OUT') || upper.includes('UBER EATS')) {
+  if (upper.includes('COFFEE') || upper.includes('CAFE') || upper.includes('STARBUCKS') || upper.includes('DUNKIN') || upper.includes('SALT AND STRAW') || upper.includes('CHICK-FIL-A') || upper.includes('NANDOS') || upper.includes('CRUMBL') || upper.includes('VERVE') || upper.includes('BISTRO') || upper.includes('RESTAURANT') || upper.includes('BURGER') || upper.includes('FERGBURGER') || upper.includes('BOSHAMPS') || upper.includes('WRIGLEY') || upper.includes('EATING OUT') || upper.includes('UBER EATS')) {
     return { category: 'Eating Out', type };
   }
 
-  // Personal & Health
+  // Personal & Health & Shopping
   if (upper.includes('OURARING') || upper.includes('GALILEO MEDICAL') || upper.includes('DOCTOR') || upper.includes('HEALTH') || upper.includes('CLINIC') || upper.includes('PHARMACY') || upper.includes('CVS')) {
     return { category: 'Health Expenses', type };
   }
-  if (upper.includes('CLOTHING') || upper.includes('HAIR') || upper.includes('SALON') || upper.includes('BARBER') || upper.includes('NIKE') || upper.includes('STORE')) {
+  if (upper.includes('ABEBOOKS') || upper.includes('SHUTTERFLY') || upper.includes('AMAZON') || upper.includes('TARGET') || upper.includes('WALMART') || upper.includes('CLOTHING') || upper.includes('HAIR') || upper.includes('SALON') || upper.includes('BARBER') || upper.includes('NIKE') || upper.includes('STORE')) {
     return { category: 'Clothing/Hair', type };
   }
 
@@ -166,6 +167,13 @@ HARR S
 Red Oak Sanitation
 $16.50`;
 
+const TWO_LINE_TABBED_SAMPLE = `7/19/2026
+Network Purchase AB* ABEBOOKS.CO LQ4L4D Marcel-Breuer-Str. 12 MUNCHEN BE DE ************4200	($37.10)	$208.99
+7/18/2026
+Network Purchase SHUTTERFLY, INC. 2800 BRIDGE PARKWAY 6506105200 CA US ************4200	($53.90)	$171.89
+7/17/2026
+Network Purchase SQ *COFFEE MAN HAPEVIL 601 N Central Ave Atlanta GA US ************4200	($7.61)	$117.99`;
+
 export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
   isOpen,
   onClose,
@@ -180,7 +188,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Multi-Format Statement Parser (Block 4-line format, Fidelity single line, and CSV)
+  // Multi-Format Statement Parser (2-line tabbed format, 4-line block format, Fidelity single line, and CSV)
   const parseStatementText = (rawContent: string, name: string) => {
     try {
       const lines = rawContent.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -192,127 +200,197 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
       const items: ParsedItem[] = [];
       const currentYear = new Date().getFullYear();
 
-      // Check if this is the 4-line block format: (Date, Spender, Vendor, Amount)
-      let i = 0;
-      let isBlockFormatFound = false;
+      // -------------------------------------------------------------
+      // Pass 1: Try 2-Line Tabbed Bank Format
+      // Line 1: Date (e.g., "7/19/2026")
+      // Line 2: Description \t Amount \t Remaining Balance
+      // -------------------------------------------------------------
+      let j = 0;
+      let is2LineFormatFound = false;
 
-      while (i < lines.length) {
-        const potentialDate = parseDateStringToISO(lines[i]);
-        if (potentialDate && i + 3 < lines.length) {
-          const spenderLine = lines[i + 1];
-          const vendorLine = lines[i + 2];
-          const amountLine = lines[i + 3];
+      while (j < lines.length - 1) {
+        const potentialDate = parseDateStringToISO(lines[j]);
+        if (potentialDate) {
+          const detailLine = lines[j + 1];
 
-          // Amount matching pattern: $43.65 or 43.65 or -$88.26 or $100.00CR
-          const amountMatch = amountLine.match(/^"?\$?\s*(-?[0-9,]+\.\d{2})(CR)?"?$/i);
-          if (amountMatch && vendorLine && spenderLine) {
-            isBlockFormatFound = true;
-            const amountStr = amountMatch[1].replace(/,/g, '');
-            const isCR = !!amountMatch[2] || amountStr.startsWith('-');
-            const numAmount = Math.abs(parseFloat(amountStr));
+          // Amount matching: ($37.10) or $37.10 or 37.10 followed by balance or tab
+          // e.g. "Network Purchase AB* ABEBOOKS.CO ... ************4200 \t ($37.10) \t $208.99"
+          const parts = detailLine.split(/\t+|\s{2,}/);
+          if (parts.length >= 2) {
+            let rawDesc = parts[0];
+            let rawAmountStr = parts[1];
 
-            const { category, type } = autoCategorize(vendorLine, isCR);
+            // If rawAmountStr doesn't look like an amount, check full line regex
+            const amountMatch = detailLine.match(/\(?\$?\s*(-?[0-9,]+\.\d{2})\)?(?:CR)?/i);
 
-            items.push({
-              id: `block-${i}-${Date.now()}`,
-              selected: true,
-              title: vendorLine,
-              amount: numAmount > 0 ? numAmount : 10.0,
-              type,
-              category,
-              date: potentialDate,
-              note: `Spender: ${spenderLine}`,
-            });
-
-            i += 4;
-            continue;
-          }
-        }
-        i++;
-      }
-
-      // If block format was not detected, parse using single-line / CSV patterns
-      if (!isBlockFormatFound) {
-        const fidelityRegex = /^(\d{2}\/\d{2})\s+(\d{2}\/\d{2})?\s*([A-Z0-9]{2,6})?\s+(.+?)\s+\$?([0-9,]+\.\d{2})(CR)?$/i;
-        const csvRegex = /^"?(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4})"?\s*,\s*"?(.+?)"?\s*,\s*"?\$?(-?[0-9,]+\.\d{2})(CR)?"?$/i;
-
-        lines.forEach((line, idx) => {
-          if (
-            line.toUpperCase().includes('TOTAL THIS PERIOD') ||
-            line.toUpperCase().includes('PAGE ') ||
-            (line.toUpperCase().includes('STATEMENT') && !line.includes('$')) ||
-            line.toUpperCase().includes('POST DATE') ||
-            line.toUpperCase().includes('PAYMENTS AND OTHER CREDITS') ||
-            line.toUpperCase().includes('PURCHASES AND OTHER DEBITS') ||
-            line.toUpperCase().includes('ACTIVITY SUMMARY')
-          ) {
-            return;
-          }
-
-          // Fidelity Regex
-          const fedMatch = line.match(fidelityRegex);
-          if (fedMatch) {
-            const postDate = fedMatch[1];
-            const transDate = fedMatch[2] || postDate;
-            const refNo = fedMatch[3] || '';
-            const desc = fedMatch[4].trim();
-            const amountStr = fedMatch[5].replace(/,/g, '');
-            const isCR = !!fedMatch[6];
-
-            const numAmount = parseFloat(amountStr);
-            if (!isNaN(numAmount) && numAmount > 0) {
-              const [mm, dd] = transDate.split('/');
-              const isoDate = `${currentYear}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
-              const { category, type } = autoCategorize(desc, isCR);
-
-              items.push({
-                id: `fed-${idx}-${Date.now()}`,
-                selected: true,
-                title: desc,
-                amount: numAmount,
-                type,
-                category,
-                date: isoDate,
-                note: `Fidelity Statement (Ref #${refNo})`,
-              });
-              return;
-            }
-          }
-
-          // CSV Regex
-          const csvMatch = line.match(csvRegex);
-          if (csvMatch) {
-            let dateStr = csvMatch[1];
-            const desc = csvMatch[2].trim();
-            let amountStr = csvMatch[3].replace(/,/g, '');
-            const isCR = !!csvMatch[4] || amountStr.startsWith('-');
-
-            let numAmount = Math.abs(parseFloat(amountStr));
-            if (!isNaN(numAmount) && numAmount > 0) {
-              let isoDate = new Date().toISOString().substring(0, 10);
-              if (dateStr.includes('-')) {
-                isoDate = dateStr;
-              } else if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                const year = parts[2] ? (parts[2].length === 2 ? `20${parts[2]}` : parts[2]) : `${currentYear}`;
-                isoDate = `${year}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            if (amountMatch) {
+              // Extract description before amount
+              const amountIndex = detailLine.indexOf(amountMatch[0]);
+              if (amountIndex > 0) {
+                rawDesc = detailLine.substring(0, amountIndex).trim();
+                rawAmountStr = amountMatch[0];
               }
 
-              const { category, type } = autoCategorize(desc, isCR);
+              is2LineFormatFound = true;
+              const isCredit = rawAmountStr.includes('CR') || (rawAmountStr.startsWith('-') && !rawAmountStr.startsWith('($'));
+              const numAmount = Math.abs(parseFloat(rawAmountStr.replace(/[^0-9.-]/g, '')));
+
+              // Clean description: strip "Network Purchase", card numbers
+              let cleanTitle = rawDesc
+                .replace(/^Network\s+Purchase\s+/i, '')
+                .replace(/^Purchase\s+/i, '')
+                .replace(/\s*\*+\d{4}$/, '')
+                .trim();
+
+              if (!cleanTitle) cleanTitle = rawDesc;
+
+              const { category, type } = autoCategorize(cleanTitle, isCredit);
 
               items.push({
-                id: `csv-${idx}-${Date.now()}`,
+                id: `line2-${j}-${Date.now()}`,
                 selected: true,
-                title: desc,
-                amount: numAmount,
+                title: cleanTitle,
+                amount: numAmount > 0 ? numAmount : 10.0,
                 type,
                 category,
-                date: isoDate,
-                note: `Imported from ${name}`,
+                date: potentialDate,
+                note: `Bank Statement Entry`,
               });
+
+              j += 2;
+              continue;
             }
           }
-        });
+        }
+        j++;
+      }
+
+      // -------------------------------------------------------------
+      // Pass 2: Try 4-Line Block Format (Date -> Spender -> Vendor -> Amount)
+      // -------------------------------------------------------------
+      if (!is2LineFormatFound) {
+        let i = 0;
+        let isBlockFormatFound = false;
+
+        while (i < lines.length) {
+          const potentialDate = parseDateStringToISO(lines[i]);
+          if (potentialDate && i + 3 < lines.length) {
+            const spenderLine = lines[i + 1];
+            const vendorLine = lines[i + 2];
+            const amountLine = lines[i + 3];
+
+            const amountMatch = amountLine.match(/^"?\$?\s*(-?[0-9,]+\.\d{2})(CR)?"?$/i);
+            if (amountMatch && vendorLine && spenderLine) {
+              isBlockFormatFound = true;
+              const amountStr = amountMatch[1].replace(/,/g, '');
+              const isCR = !!amountMatch[2] || amountStr.startsWith('-');
+              const numAmount = Math.abs(parseFloat(amountStr));
+
+              const { category, type } = autoCategorize(vendorLine, isCR);
+
+              items.push({
+                id: `block-${i}-${Date.now()}`,
+                selected: true,
+                title: vendorLine,
+                amount: numAmount > 0 ? numAmount : 10.0,
+                type,
+                category,
+                date: potentialDate,
+                note: `Spender: ${spenderLine}`,
+              });
+
+              i += 4;
+              continue;
+            }
+          }
+          i++;
+        }
+
+        // -------------------------------------------------------------
+        // Pass 3: Single-Line & CSV Formats (Fidelity, standard CSV)
+        // -------------------------------------------------------------
+        if (!isBlockFormatFound) {
+          const fidelityRegex = /^(\d{2}\/\d{2})\s+(\d{2}\/\d{2})?\s*([A-Z0-9]{2,6})?\s+(.+?)\s+\$?([0-9,]+\.\d{2})(CR)?$/i;
+          const csvRegex = /^"?(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4})"?\s*,\s*"?(.+?)"?\s*,\s*"?\$?(-?[0-9,]+\.\d{2})(CR)?"?$/i;
+
+          lines.forEach((line, idx) => {
+            if (
+              line.toUpperCase().includes('TOTAL THIS PERIOD') ||
+              line.toUpperCase().includes('PAGE ') ||
+              (line.toUpperCase().includes('STATEMENT') && !line.includes('$')) ||
+              line.toUpperCase().includes('POST DATE') ||
+              line.toUpperCase().includes('PAYMENTS AND OTHER CREDITS') ||
+              line.toUpperCase().includes('PURCHASES AND OTHER DEBITS') ||
+              line.toUpperCase().includes('ACTIVITY SUMMARY')
+            ) {
+              return;
+            }
+
+            // Fidelity Regex
+            const fedMatch = line.match(fidelityRegex);
+            if (fedMatch) {
+              const postDate = fedMatch[1];
+              const transDate = fedMatch[2] || postDate;
+              const refNo = fedMatch[3] || '';
+              const desc = fedMatch[4].trim();
+              const amountStr = fedMatch[5].replace(/,/g, '');
+              const isCR = !!fedMatch[6];
+
+              const numAmount = parseFloat(amountStr);
+              if (!isNaN(numAmount) && numAmount > 0) {
+                const [mm, dd] = transDate.split('/');
+                const isoDate = `${currentYear}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+                const { category, type } = autoCategorize(desc, isCR);
+
+                items.push({
+                  id: `fed-${idx}-${Date.now()}`,
+                  selected: true,
+                  title: desc,
+                  amount: numAmount,
+                  type,
+                  category,
+                  date: isoDate,
+                  note: `Fidelity Statement (Ref #${refNo})`,
+                });
+                return;
+              }
+            }
+
+            // CSV Regex
+            const csvMatch = line.match(csvRegex);
+            if (csvMatch) {
+              let dateStr = csvMatch[1];
+              const desc = csvMatch[2].trim();
+              let amountStr = csvMatch[3].replace(/,/g, '');
+              const isCR = !!csvMatch[4] || amountStr.startsWith('-');
+
+              let numAmount = Math.abs(parseFloat(amountStr));
+              if (!isNaN(numAmount) && numAmount > 0) {
+                let isoDate = new Date().toISOString().substring(0, 10);
+                if (dateStr.includes('-')) {
+                  isoDate = dateStr;
+                } else if (dateStr.includes('/')) {
+                  const parts = dateStr.split('/');
+                  const year = parts[2] ? (parts[2].length === 2 ? `20${parts[2]}` : parts[2]) : `${currentYear}`;
+                  isoDate = `${year}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                }
+
+                const { category, type } = autoCategorize(desc, isCR);
+
+                items.push({
+                  id: `csv-${idx}-${Date.now()}`,
+                  selected: true,
+                  title: desc,
+                  amount: numAmount,
+                  type,
+                  category,
+                  date: isoDate,
+                  note: `Imported from ${name}`,
+                });
+              }
+            }
+          });
+        }
       }
 
       if (items.length === 0) {
@@ -347,6 +425,11 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
       return;
     }
     parseStatementText(pastedText, 'Pasted_Statement_Text');
+  };
+
+  const handleLoadDemo2Line = () => {
+    setPastedText(TWO_LINE_TABBED_SAMPLE);
+    parseStatementText(TWO_LINE_TABBED_SAMPLE, '2Line_Bank_Statement.txt');
   };
 
   const handleLoadDemoFidelity = () => {
@@ -411,7 +494,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-extrabold text-slate-100">Credit Card & Statement Parser</h3>
-              <p className="text-xs text-slate-400">Supports 4-line block format, Fidelity Rewards Visa, Chase, CSV, and text statements</p>
+              <p className="text-xs text-slate-400">Supports 2-line tabbed statements, 4-line block format, Fidelity, Chase, CSV</p>
             </div>
           </div>
           <button
@@ -485,7 +568,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
                         Click to select statement file (.csv or .txt)
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        Supports 4-line block format, Fidelity Rewards Visa, Chase, BofA, Amex CSV/TXT
+                        Supports 2-line tabbed, 4-line block format, Fidelity Rewards, Chase, BofA CSV/TXT
                       </p>
                     </div>
                   </div>
@@ -496,14 +579,15 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
                     rows={8}
                     placeholder={`Paste your statement text here.
 
-Format Option 1 (4-Line Block):
+Format Option 1 (2-Line Tabbed Bank Format):
+7/19/2026
+Network Purchase AB* ABEBOOKS.CO LQ4L4D... ($37.10) $208.99
+
+Format Option 2 (4-Line Block Format):
 Aug-02-2026
 CAMI S
 Amazon
-$43.65
-
-Format Option 2 (Single-Line / Fidelity):
-04/22 04/21 4002 KROGER #495 ALPHARETTA GA $129.58`}
+$43.65`}
                     value={pastedText}
                     onChange={(e) => setPastedText(e.target.value)}
                     className="w-full p-4 rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-100 placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-emerald-500 transition-colors resize-none"
@@ -524,11 +608,19 @@ Format Option 2 (Single-Line / Fidelity):
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
+                    onClick={handleLoadDemo2Line}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold border border-slate-700/60 transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Load 2-Line Tabbed Sample</span>
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleLoadDemoBlock}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold border border-slate-700/60 transition-colors"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Load 4-Line Block Sample</span>
+                    <span>Load 4-Line Sample</span>
                   </button>
                   <button
                     type="button"
@@ -595,7 +687,7 @@ Format Option 2 (Single-Line / Fidelity):
                       <th className="p-3">Vendor / Title</th>
                       <th className="p-3">Category</th>
                       <th className="p-3">Date</th>
-                      <th className="p-3">Cardholder / Note</th>
+                      <th className="p-3">Note</th>
                       <th className="p-3 text-right">Amount</th>
                     </tr>
                   </thead>
