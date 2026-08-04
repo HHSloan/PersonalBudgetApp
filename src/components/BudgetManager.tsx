@@ -77,7 +77,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             <div className="h-8 w-px bg-slate-800" />
             <div>
               <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total Spent</span>
-              <p className={`text-lg font-extrabold ${totalMonthlySpent > totalMonthlyBudget ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <p className={`text-lg font-extrabold ${totalMonthlySpent > totalMonthlyBudget ? 'text-amber-400' : 'text-emerald-400'}`}>
                 {formatCurrency(totalMonthlySpent)}
               </p>
             </div>
@@ -88,7 +88,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div className="mt-6 space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-slate-300">Overall Budget Utilization</span>
-            <span className={overallPercentage > 100 ? 'text-rose-400' : overallPercentage > 85 ? 'text-amber-400' : 'text-emerald-400'}>
+            <span className={overallPercentage > 100 ? 'text-amber-400' : overallPercentage > 85 ? 'text-yellow-400' : 'text-emerald-400'}>
               {overallPercentage.toFixed(1)}% Used
             </span>
           </div>
@@ -96,9 +96,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 overallPercentage > 100
-                  ? 'bg-gradient-to-r from-rose-500 to-red-600'
-                  : overallPercentage > 85
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                  : overallPercentage > 85
+                  ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
                   : 'bg-gradient-to-r from-emerald-500 to-teal-400'
               }`}
               style={{ width: `${Math.min(overallPercentage, 100)}%` }}
@@ -124,9 +124,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               key={cat}
               className={`glass-panel p-5 rounded-2xl border transition-all ${
                 isOver
-                  ? 'border-rose-500/40 bg-rose-500/5'
+                  ? 'border-amber-500/40 bg-amber-500/10'
                   : isWarning
-                  ? 'border-amber-500/40 bg-amber-500/5'
+                  ? 'border-yellow-500/40 bg-yellow-500/5'
                   : 'border-slate-800'
               }`}
             >
@@ -177,7 +177,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 </div>
                 <div>
                   <span className="text-slate-400">{isOver ? 'Over budget: ' : 'Remaining: '}</span>
-                  <span className={`font-bold ${isOver ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  <span className={`font-bold ${isOver ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {formatCurrency(Math.abs(remaining))}
                   </span>
                 </div>
@@ -189,9 +189,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${
                       isOver
-                        ? 'bg-rose-500'
-                        : isWarning
                         ? 'bg-amber-400'
+                        : isWarning
+                        ? 'bg-yellow-400'
                         : 'bg-emerald-400'
                     }`}
                     style={{ width: `${Math.min(percent, 100)}%` }}
@@ -200,7 +200,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
                   <span className="flex items-center gap-1">
                     {isOver ? (
-                      <span className="text-rose-400 font-semibold flex items-center gap-1">
+                      <span className="text-amber-400 font-semibold flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" /> Exceeded limit
                       </span>
                     ) : isWarning ? (

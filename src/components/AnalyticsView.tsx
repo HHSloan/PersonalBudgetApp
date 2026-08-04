@@ -138,7 +138,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                 onResetData();
               }
             }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold transition-colors border border-rose-500/20"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-semibold transition-colors border border-amber-500/20"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Data</span>
@@ -224,7 +224,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                     {formatCurrency(row.limit)}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <span className={row.variance >= 0 ? 'text-emerald-400' : 'text-rose-400 font-bold'}>
+                    <span className={row.variance >= 0 ? 'text-emerald-400' : 'text-amber-400 font-bold'}>
                       {row.variance >= 0 ? `+${formatCurrency(row.variance)}` : `-${formatCurrency(Math.abs(row.variance))}`}
                     </span>
                   </td>

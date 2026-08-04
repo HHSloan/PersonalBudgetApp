@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Transaction, FilterOptions } from '../types/budget';
 import { formatCurrency, formatDate, CATEGORIES } from '../utils/formatters';
 import {
@@ -11,11 +11,14 @@ import {
   ArrowUpDown,
   FileText,
   Tag,
+  ChevronDown,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 interface TransactionListProps {
   transactions: Transaction[];
   onOpenAddModal: () => void;
+  onOpenUploadModal: () => void;
   onOpenEditModal: (transaction: Transaction) => void;
   onDeleteTransaction: (id: string) => void;
 }
@@ -23,6 +26,7 @@ interface TransactionListProps {
 export const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
   onOpenAddModal,
+  onOpenUploadModal,
   onOpenEditModal,
   onDeleteTransaction,
 }) => {
@@ -34,6 +38,18 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   });
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Filter logic
   const filteredTransactions = transactions.filter((t) => {
@@ -82,13 +98,51 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={onOpenAddModal}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>New Transaction</span>
-          </button>
+          {/* Dropdown CTA */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Add Transaction</span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 glass-panel rounded-2xl shadow-2xl border border-slate-700/80 py-1.5 z-50 animate-fadeIn">
+                <button
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    onOpenAddModal();
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-100 hover:bg-slate-800/80 flex items-center gap-2.5 transition-colors"
+                >
+                  <PlusCircle className="w-4 h-4 text-emerald-400" />
+                  <div>
+                    <div>Add Transaction</div>
+                    <span className="text-[10px] text-slate-400 font-normal">Create single entry manually</span>
+                  </div>
+                </button>
+
+                <div className="my-1 border-t border-slate-800/80" />
+
+                <button
+                  onClick={() => {
+                    setIsDropdownOpen(false);
+                    onOpenUploadModal();
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-100 hover:bg-slate-800/80 flex items-center gap-2.5 transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-teal-400" />
+                  <div>
+                    <div>Upload Statement</div>
+                    <span className="text-[10px] text-slate-400 font-normal">Import credit card or bank CSV</span>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filter Controls Row */}
@@ -246,7 +300,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                                 onDeleteTransaction(tx.id);
                                 setDeleteConfirmId(null);
                               }}
-                              className="px-2 py-1 rounded-md bg-rose-600 text-white text-xs font-bold hover:bg-rose-700"
+                              className="px-2 py-1 rounded-md bg-amber-400 text-slate-950 text-xs font-extrabold hover:bg-amber-300"
                             >
                               Confirm
                             </button>
@@ -261,7 +315,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           <button
                             onClick={() => setDeleteConfirmId(tx.id)}
                             title="Delete Transaction"
-                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors border border-rose-500/20"
+                            className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 transition-colors border border-amber-500/20"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

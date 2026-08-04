@@ -106,19 +106,19 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       
       {/* Alert Banner for Over-Budget Categories */}
       {overBudgetCategories.length > 0 && (
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 backdrop-blur-md animate-soft-pulse">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 backdrop-blur-md animate-soft-pulse">
           <div className="flex items-center gap-3">
-            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0" />
+            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
             <div>
               <p className="text-sm font-semibold">Budget Limit Exceeded!</p>
-              <p className="text-xs text-rose-200/80">
+              <p className="text-xs text-amber-200/80">
                 {overBudgetCategories.length} category({overBudgetCategories.length > 1 ? 's' : ''}) spending exceed monthly budget limits.
               </p>
             </div>
           </div>
           <button
             onClick={onNavigateToBudgets}
-            className="px-3 py-1.5 rounded-lg bg-rose-500 text-white font-bold text-xs hover:bg-rose-600 transition-colors shadow-md"
+            className="px-3 py-1.5 rounded-lg bg-amber-400 text-slate-950 font-extrabold text-xs hover:bg-amber-300 transition-colors shadow-md"
           >
             Review Budgets
           </button>
@@ -137,7 +137,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </div>
           </div>
           <div className="mt-3">
-            <h3 className={`text-2xl font-extrabold tracking-tight ${netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <h3 className={`text-2xl font-extrabold tracking-tight ${netBalance >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
               {formatCurrency(netBalance)}
             </h3>
             <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
@@ -147,7 +147,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   <ArrowUpRight className="w-3.5 h-3.5" /> Positive
                 </span>
               ) : (
-                <span className="text-rose-400 font-semibold flex items-center">
+                <span className="text-amber-400 font-semibold flex items-center">
                   <ArrowDownRight className="w-3.5 h-3.5" /> Deficit
                 </span>
               )}
@@ -175,12 +175,12 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         <div className="glass-panel glass-panel-hover p-5 rounded-2xl relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Expenses</span>
-            <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <TrendingDown className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
-            <h3 className="text-2xl font-extrabold tracking-tight text-rose-400">
+            <h3 className="text-2xl font-extrabold tracking-tight text-amber-300">
               {formatCurrency(totalExpenses)}
             </h3>
             <p className="text-xs text-slate-400 mt-1">Outflow spending total</p>
@@ -234,7 +234,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 />
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                 <Bar dataKey="income" name="Income" fill="#10b981" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="expense" name="Expense" fill="#f43f5e" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="expense" name="Expense" fill="#f59e0b" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -318,7 +318,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold ${
                       tx.type === 'income'
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                     }`}
                   >
                     {tx.type === 'income' ? '+' : '-'}

@@ -20,6 +20,7 @@ import { Header } from './components/Header';
 import { DashboardOverview } from './components/DashboardOverview';
 import { TransactionList } from './components/TransactionList';
 import { TransactionModal } from './components/TransactionModal';
+import { StatementUploadModal } from './components/StatementUploadModal';
 import { BudgetManager } from './components/BudgetManager';
 import { AnalyticsView } from './components/AnalyticsView';
 
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   // Toast Notification State
@@ -92,6 +94,16 @@ export const App: React.FC = () => {
     setEditingTransaction(null);
   };
 
+  // Bulk Import Statement Handler
+  const handleBulkImportStatement = (importedItems: Omit<Transaction, 'id'>[]) => {
+    const newItems: Transaction[] = importedItems.map((item, idx) => ({
+      ...item,
+      id: `tx-statement-${Date.now()}-${idx}`,
+    }));
+    setTransactions((prev) => [...newItems, ...prev]);
+    showToast(`Successfully imported ${newItems.length} transactions from statement`, 'success');
+  };
+
   // Delete Transaction
   const handleDeleteTransaction = (id: string) => {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
@@ -146,6 +158,9 @@ export const App: React.FC = () => {
           setEditingTransaction(null);
           setIsModalOpen(true);
         }}
+        onOpenUploadModal={() => {
+          setIsUploadModalOpen(true);
+        }}
         overBudgetCount={overBudgetCount}
       />
 
@@ -171,6 +186,9 @@ export const App: React.FC = () => {
             onOpenAddModal={() => {
               setEditingTransaction(null);
               setIsModalOpen(true);
+            }}
+            onOpenUploadModal={() => {
+              setIsUploadModalOpen(true);
             }}
             onOpenEditModal={(tx) => {
               setEditingTransaction(tx);
@@ -220,6 +238,13 @@ export const App: React.FC = () => {
         editingTransaction={editingTransaction}
       />
 
+      {/* Statement Upload Modal */}
+      <StatementUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onBulkImport={handleBulkImportStatement}
+      />
+
       {/* Toast Notification */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 animate-bounceIn">
@@ -228,7 +253,7 @@ export const App: React.FC = () => {
               toast.type === 'success'
                 ? 'bg-emerald-500/90 text-slate-950 border-emerald-400'
                 : toast.type === 'danger'
-                ? 'bg-rose-500/90 text-white border-rose-400'
+                ? 'bg-amber-400 text-slate-950 border-amber-300 font-extrabold'
                 : 'bg-slate-800/90 text-slate-100 border-slate-700'
             }`}
           >

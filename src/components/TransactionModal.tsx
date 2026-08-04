@@ -100,8 +100,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           
           {/* Error Message */}
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
               <span>{error}</span>
             </div>
           )}
@@ -122,7 +122,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 }}
                 className={`py-2 rounded-lg text-xs font-extrabold transition-all ${
                   type === 'expense'
-                    ? 'bg-rose-500 text-white shadow-md'
+                    ? 'bg-amber-400 text-slate-950 shadow-md'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
