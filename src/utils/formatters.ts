@@ -59,6 +59,7 @@ export const EXPENSE_CATEGORIES: Category[] = [
   'Misc/Entertainment',
   'House Expenses',
   'Health Expenses',
+  'TBD',
 ];
 
 export const CATEGORIES: Category[] = [
@@ -126,4 +127,5 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   'Shopping': '#f97316',
   'Health & Fitness': '#10b981',
   'Miscellaneous': '#64748b',
+  'TBD': '#94a3b8',
 };

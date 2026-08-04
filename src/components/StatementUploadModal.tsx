@@ -130,7 +130,7 @@ const autoCategorize = (description: string, isCredit: boolean = false): { categ
     return { category: 'Clothing/Hair', type };
   }
 
-  return { category: 'Misc/Entertainment', type };
+  return { category: 'TBD', type };
 };
 
 const FIDELITY_STATEMENT_SAMPLE = `HARRISON S - 5308: Purchases and Other Debits

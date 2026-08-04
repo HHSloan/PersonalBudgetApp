@@ -46,6 +46,7 @@ export type Category =
   | 'Shopping'
   | 'Health & Fitness'
   | 'Miscellaneous'
+  | 'TBD'
   // Income Subcategories
   | 'Camille Total Monthly Pre-Tax Income'
   | 'Harrison Total Monthly Pre-Tax Income'
