@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Transaction, FilterOptions } from '../types/budget';
-import { formatCurrency, formatDate, CATEGORIES } from '../utils/formatters';
+import { Transaction, FilterOptions, Category } from '../types/budget';
+import { formatCurrency, formatDate, CATEGORIES, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../utils/formatters';
 import {
   Search,
   Filter,
@@ -21,6 +21,7 @@ interface TransactionListProps {
   onOpenUploadModal: () => void;
   onOpenEditModal: (transaction: Transaction) => void;
   onDeleteTransaction: (id: string) => void;
+  onUpdateTransaction?: (transaction: Transaction) => void;
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
@@ -29,6 +30,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   onOpenUploadModal,
   onOpenEditModal,
   onDeleteTransaction,
+  onUpdateTransaction,
 }) => {
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '',
@@ -254,11 +256,27 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                       )}
                     </td>
 
-                    {/* Category Badge */}
+                    {/* Category Selector (Inline Editable) */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 border border-slate-700/60 text-slate-300">
-                        {tx.category}
-                      </span>
+                      <select
+                        value={tx.category}
+                        onChange={(e) => {
+                          const newCategory = e.target.value as Category;
+                          if (onUpdateTransaction) {
+                            onUpdateTransaction({ ...tx, category: newCategory });
+                          }
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-emerald-500/80 text-slate-200 text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                      >
+                        {(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                        {!(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).includes(tx.category) && (
+                          <option value={tx.category}>{tx.category}</option>
+                        )}
+                      </select>
                     </td>
 
                     {/* Date */}

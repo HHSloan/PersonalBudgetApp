@@ -133,6 +133,13 @@ export const App: React.FC = () => {
     showToast('Backup data restored successfully', 'success');
   };
 
+  const handleUpdateTransaction = (updatedTx: Transaction) => {
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === updatedTx.id ? updatedTx : t))
+    );
+    showToast(`Category for "${updatedTx.title}" updated to ${updatedTx.category}`, 'success');
+  };
+
   // Count categories over budget
   const expenseByCategory = transactions
     .filter((t) => t.type === 'expense')
@@ -195,6 +202,7 @@ export const App: React.FC = () => {
               setIsModalOpen(true);
             }}
             onDeleteTransaction={handleDeleteTransaction}
+            onUpdateTransaction={handleUpdateTransaction}
           />
         )}
 
