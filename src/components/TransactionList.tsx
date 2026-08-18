@@ -66,7 +66,11 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     // Type matching
     const matchesType = filters.type === 'all' || t.type === filters.type;
 
-    return matchesSearch && matchesCategory && matchesType;
+    // Date Range matching
+    const matchesStartDate = !filters.startDate || t.date >= filters.startDate;
+    const matchesEndDate = !filters.endDate || t.date <= filters.endDate;
+
+    return matchesSearch && matchesCategory && matchesType && matchesStartDate && matchesEndDate;
   });
 
   // Sorting logic
@@ -84,8 +88,41 @@ export const TransactionList: React.FC<TransactionListProps> = ({
       category: 'all',
       type: 'all',
       sortBy: 'date-desc',
+      startDate: '',
+      endDate: '',
     });
   };
+
+  const handleSetDatePreset = (preset: 'this-month' | 'last-30' | 'ytd') => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    if (preset === 'this-month') {
+      const firstDay = `${yyyy}-${mm}-01`;
+      const lastDayObj = new Date(yyyy, today.getMonth() + 1, 0);
+      const lastDayStr = `${yyyy}-${mm}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
+      setFilters((prev) => ({ ...prev, startDate: firstDay, endDate: lastDayStr }));
+    } else if (preset === 'last-30') {
+      const d = new Date();
+      d.setDate(d.getDate() - 30);
+      const pastY = d.getFullYear();
+      const pastM = String(d.getMonth() + 1).padStart(2, '0');
+      const pastD = String(d.getDate()).padStart(2, '0');
+      setFilters((prev) => ({ ...prev, startDate: `${pastY}-${pastM}-${pastD}`, endDate: todayStr }));
+    } else if (preset === 'ytd') {
+      setFilters((prev) => ({ ...prev, startDate: `${yyyy}-01-01`, endDate: todayStr }));
+    }
+  };
+
+  const isFilterActive =
+    !!filters.searchQuery ||
+    filters.category !== 'all' ||
+    filters.type !== 'all' ||
+    !!filters.startDate ||
+    !!filters.endDate;
 
   return (
     <div className="space-y-6">
@@ -147,7 +184,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         </div>
 
-        {/* Filter Controls Row */}
+        {/* Filter Controls Row 1: Search, Category, Type, Sort */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
           
           {/* Search Box */}
@@ -213,15 +250,80 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
         </div>
 
-        {/* Clear Filters indicator if active */}
-        {(filters.searchQuery || filters.category !== 'all' || filters.type !== 'all') && (
+        {/* Filter Controls Row 2: Date Range Filter Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Date Range:</span>
+            </div>
+
+            {/* Start Date Picker */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-500">From</span>
+              <input
+                type="date"
+                value={filters.startDate || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value }))}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-200 text-xs focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            {/* End Date Picker */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-500">To</span>
+              <input
+                type="date"
+                value={filters.endDate || ''}
+                onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value }))}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-200 text-xs focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Quick Date Presets */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => handleSetDatePreset('this-month')}
+              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-[11px] hover:text-emerald-400 hover:border-emerald-500/50 transition-colors"
+            >
+              This Month
+            </button>
+            <button
+              onClick={() => handleSetDatePreset('last-30')}
+              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-[11px] hover:text-emerald-400 hover:border-emerald-500/50 transition-colors"
+            >
+              Last 30 Days
+            </button>
+            <button
+              onClick={() => handleSetDatePreset('ytd')}
+              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-[11px] hover:text-emerald-400 hover:border-emerald-500/50 transition-colors"
+            >
+              YTD
+            </button>
+            {(filters.startDate || filters.endDate) && (
+              <button
+                onClick={() => setFilters((prev) => ({ ...prev, startDate: '', endDate: '' }))}
+                className="px-2 py-1 rounded-lg text-slate-400 hover:text-amber-400 text-[11px] underline"
+              >
+                Clear Dates
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Clear Filters Indicator */}
+        {isFilterActive && (
           <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-800">
-            <span>Filtered view active</span>
+            <span className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Filtered view active ({sortedTransactions.length} results)</span>
+            </span>
             <button
               onClick={handleResetFilters}
               className="text-emerald-400 hover:underline font-semibold"
             >
-              Reset Filters
+              Reset All Filters
             </button>
           </div>
         )}

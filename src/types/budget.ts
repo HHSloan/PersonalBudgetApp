@@ -26,6 +26,8 @@ export interface FilterOptions {
   category: string; // 'all' or Category
   type: string; // 'all' | 'income' | 'expense'
   sortBy: 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface CategorySummary {
