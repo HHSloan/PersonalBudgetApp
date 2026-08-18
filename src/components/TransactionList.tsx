@@ -266,14 +266,21 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                             onUpdateTransaction({ ...tx, category: newCategory });
                           }
                         }}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-emerald-500/80 text-slate-200 text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                        className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold focus:outline-none transition-colors cursor-pointer ${
+                          !tx.category
+                            ? 'bg-amber-500/10 border-amber-500/50 text-amber-300 italic'
+                            : 'bg-slate-900/90 border-slate-700/80 hover:border-emerald-500/80 text-slate-200 focus:border-emerald-500'
+                        }`}
                       >
+                        <option value="" className="text-amber-400 italic font-bold">
+                          -- Unassigned --
+                        </option>
                         {(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>
                         ))}
-                        {!(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).includes(tx.category) && (
+                        {tx.category && !(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).includes(tx.category) && (
                           <option value={tx.category}>{tx.category}</option>
                         )}
                       </select>

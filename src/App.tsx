@@ -158,9 +158,9 @@ export const App: React.FC = () => {
   const handleDeleteCategory = (categoryName: string) => {
     setBudgetLimits((prev) => prev.filter((b) => b.category !== categoryName));
     setTransactions((prev) =>
-      prev.map((t) => (t.category === categoryName ? { ...t, category: 'TBD' } : t))
+      prev.map((t) => (t.category === categoryName ? { ...t, category: '' } : t))
     );
-    showToast(`Category "${categoryName}" deleted`, 'info');
+    showToast(`Category "${categoryName}" deleted. Associated transactions set to Unassigned.`, 'info');
   };
 
   // Count categories over budget
