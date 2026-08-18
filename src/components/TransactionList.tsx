@@ -380,7 +380,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         <option value="" className="text-amber-400 italic font-bold">
                           -- Unassigned --
                         </option>
-                        {(tx.type === 'income' ? INCOME_CATEGORIES : activeCategories.filter((c) => !INCOME_CATEGORIES.includes(c))).map((c) => (
+                        {activeCategories.map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>

@@ -175,6 +175,13 @@ export const App: React.FC = () => {
     (b) => (expenseByCategory[b.category] || 0) > b.limit
   ).length;
 
+  const fullCategoriesList = Array.from(
+    new Set([
+      ...budgetLimits.map((b) => b.category),
+      ...transactions.map((t) => t.category),
+    ])
+  ).filter(Boolean);
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
       
@@ -213,7 +220,7 @@ export const App: React.FC = () => {
         {activeTab === 'transactions' && (
           <TransactionList
             transactions={transactions}
-            availableCategories={budgetLimits.map((b) => b.category)}
+            availableCategories={fullCategoriesList}
             onOpenAddModal={() => {
               setEditingTransaction(null);
               setIsModalOpen(true);
@@ -270,7 +277,7 @@ export const App: React.FC = () => {
         }}
         onSave={handleSaveTransaction}
         editingTransaction={editingTransaction}
-        availableCategories={budgetLimits.map((b) => b.category)}
+        availableCategories={fullCategoriesList}
       />
 
       {/* Statement Upload Modal */}
