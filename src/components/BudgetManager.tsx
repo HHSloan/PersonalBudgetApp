@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
 import { Transaction, BudgetLimit, Category } from '../types/budget';
-import { formatCurrency, EXPENSE_CATEGORIES, CATEGORY_COLORS } from '../utils/formatters';
-import { PieChart, Edit3, Save, Check, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { formatCurrency, getCategoryColor, INCOME_CATEGORIES } from '../utils/formatters';
+import { PieChart, Edit3, Save, Check, AlertTriangle, ShieldCheck, PlusCircle, Trash2, X, FolderPlus } from 'lucide-react';
 
 interface BudgetManagerProps {
   transactions: Transaction[];
   budgetLimits: BudgetLimit[];
   onUpdateLimit: (category: Category, newLimit: number) => void;
+  onAddCategory?: (categoryName: string, initialLimit: number) => void;
+  onDeleteCategory?: (categoryName: string) => void;
 }
 
 export const BudgetManager: React.FC<BudgetManagerProps> = ({
   transactions,
   budgetLimits,
   onUpdateLimit,
+  onAddCategory,
+  onDeleteCategory,
 }) => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [tempLimit, setTempLimit] = useState<string>('');
+  
+  // Add Category form state
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatLimit, setNewCatLimit] = useState('300');
+  const [addError, setAddError] = useState('');
+
+  // Delete Category confirmation state
+  const [deleteConfirmCat, setDeleteConfirmCat] = useState<Category | null>(null);
 
   // Calculate actual spending per category for current expenses
   const spendingByCategory = transactions
@@ -25,14 +38,16 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       return acc;
     }, {} as Record<string, number>);
 
-  // Filter expense-relevant categories
-  const expenseCategories = EXPENSE_CATEGORIES;
+  // Categories present in budgetLimits excluding pure Income subcategories
+  const managedCategories = budgetLimits
+    .map((b) => b.category)
+    .filter((cat) => !INCOME_CATEGORIES.includes(cat));
 
   const totalMonthlyBudget = budgetLimits
-    .filter((b) => expenseCategories.includes(b.category))
+    .filter((b) => managedCategories.includes(b.category))
     .reduce((sum, b) => sum + b.limit, 0);
 
-  const totalMonthlySpent = expenseCategories.reduce(
+  const totalMonthlySpent = managedCategories.reduce(
     (sum, cat) => sum + (spendingByCategory[cat] || 0),
     0
   );
@@ -52,6 +67,35 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     setEditingCategory(null);
   };
 
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) {
+      setAddError('Category name is required.');
+      return;
+    }
+    const val = parseFloat(newCatLimit);
+    if (isNaN(val) || val < 0) {
+      setAddError('Limit must be a valid positive number.');
+      return;
+    }
+
+    if (onAddCategory) {
+      onAddCategory(newCatName.trim(), val);
+    }
+
+    setNewCatName('');
+    setNewCatLimit('300');
+    setAddError('');
+    setIsAddOpen(false);
+  };
+
+  const handleDeleteConfirm = (cat: Category) => {
+    if (onDeleteCategory) {
+      onDeleteCategory(cat);
+    }
+    setDeleteConfirmCat(null);
+  };
+
   return (
     <div className="space-y-6">
       
@@ -64,22 +108,36 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               <h2 className="text-xl font-extrabold text-slate-100">Monthly Budget Limits</h2>
             </div>
             <p className="text-xs text-slate-400">
-              Track category spending limits and monitor budget usage progress
+              Track category spending limits, create new categories, and monitor budget utilization
             </p>
           </div>
 
-          {/* Combined Totals */}
-          <div className="flex items-center gap-6 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-            <div>
-              <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total Limit</span>
-              <p className="text-lg font-extrabold text-slate-100">{formatCurrency(totalMonthlyBudget)}</p>
-            </div>
-            <div className="h-8 w-px bg-slate-800" />
-            <div>
-              <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total Spent</span>
-              <p className={`text-lg font-extrabold ${totalMonthlySpent > totalMonthlyBudget ? 'text-amber-400' : 'text-emerald-400'}`}>
-                {formatCurrency(totalMonthlySpent)}
-              </p>
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Add Category CTA Button */}
+            <button
+              onClick={() => {
+                setIsAddOpen((prev) => !prev);
+                setAddError('');
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+            >
+              <FolderPlus className="w-4 h-4" />
+              <span>Add Category</span>
+            </button>
+
+            {/* Combined Totals */}
+            <div className="flex items-center gap-6 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total Limit</span>
+                <p className="text-base font-extrabold text-slate-100">{formatCurrency(totalMonthlyBudget)}</p>
+              </div>
+              <div className="h-8 w-px bg-slate-800" />
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Total Spent</span>
+                <p className={`text-base font-extrabold ${totalMonthlySpent > totalMonthlyBudget ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  {formatCurrency(totalMonthlySpent)}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -107,17 +165,87 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         </div>
       </div>
 
+      {/* Add Category Drawer / Form */}
+      {isAddOpen && (
+        <div className="glass-panel p-5 rounded-2xl border border-emerald-500/30 bg-slate-900/90 shadow-2xl animate-fadeIn space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <FolderPlus className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-sm font-extrabold text-slate-100">Create New Budget Category</h3>
+            </div>
+            <button
+              onClick={() => setIsAddOpen(false)}
+              className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {addError && (
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+              {addError}
+            </div>
+          )}
+
+          <form onSubmit={handleAddSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                Category Name *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Vacation Fund, Pets, Lawn Care"
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-100 text-xs focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                Monthly Budget Limit ($) *
+              </label>
+              <input
+                type="number"
+                step="25"
+                min="0"
+                placeholder="300"
+                value={newCatLimit}
+                onChange={(e) => setNewCatLimit(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-100 text-xs font-mono focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="submit"
+                className="flex-1 py-2 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-md transition-colors"
+              >
+                Save Category
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAddOpen(false)}
+                className="py-2 px-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold text-xs transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* Category Progress Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {expenseCategories.map((cat) => {
-          const limitObj = budgetLimits.find((b) => b.category === cat) || { category: cat, limit: 500 };
+        {managedCategories.map((cat) => {
+          const limitObj = budgetLimits.find((b) => b.category === cat) || { category: cat, limit: 0 };
           const spent = spendingByCategory[cat] || 0;
           const remaining = limitObj.limit - spent;
           const percent = limitObj.limit > 0 ? (spent / limitObj.limit) * 100 : 0;
           const isOver = spent > limitObj.limit;
           const isWarning = percent >= 75 && !isOver;
 
-          const colorTheme = CATEGORY_COLORS[cat] || '#64748b';
+          const colorTheme = getCategoryColor(cat);
 
           return (
             <div
@@ -132,41 +260,76 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             >
               {/* Category Header */}
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className="w-3.5 h-3.5 rounded-full"
+                    className="w-3.5 h-3.5 rounded-full shrink-0"
                     style={{ backgroundColor: colorTheme }}
                   />
-                  <h3 className="font-bold text-slate-100 text-sm">{cat}</h3>
+                  <h3 className="font-bold text-slate-100 text-sm truncate" title={cat}>{cat}</h3>
                 </div>
 
-                {/* Edit Limit Control */}
-                {editingCategory === cat ? (
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="number"
-                      step="50"
-                      min="0"
-                      value={tempLimit}
-                      onChange={(e) => setTempLimit(e.target.value)}
-                      className="w-24 px-2 py-1 rounded-lg bg-slate-900 border border-emerald-500 text-slate-100 text-xs font-mono focus:outline-none"
-                    />
-                    <button
-                      onClick={() => handleSaveEdit(cat)}
-                      className="p-1 rounded-md bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleStartEdit(cat, limitObj.limit)}
-                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400 transition-colors p-1 rounded-md hover:bg-slate-800"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span className="font-mono text-slate-300">{formatCurrency(limitObj.limit)}</span>
-                  </button>
-                )}
+                {/* Edit & Delete Controls */}
+                <div className="flex items-center gap-2 shrink-0">
+                  
+                  {/* Delete Confirmation Row */}
+                  {deleteConfirmCat === cat ? (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleDeleteConfirm(cat)}
+                        className="px-2 py-1 rounded-md bg-amber-400 text-slate-950 text-xs font-extrabold hover:bg-amber-300 transition-colors"
+                      >
+                        Confirm Delete
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmCat(null)}
+                        className="px-2 py-1 rounded-md bg-slate-800 text-slate-300 text-xs hover:bg-slate-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Edit Limit Control */}
+                      {editingCategory === cat ? (
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            step="50"
+                            min="0"
+                            value={tempLimit}
+                            onChange={(e) => setTempLimit(e.target.value)}
+                            className="w-24 px-2 py-1 rounded-lg bg-slate-900 border border-emerald-500 text-slate-100 text-xs font-mono focus:outline-none"
+                          />
+                          <button
+                            onClick={() => handleSaveEdit(cat)}
+                            className="p-1 rounded-md bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStartEdit(cat, limitObj.limit)}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400 transition-colors p-1 rounded-md hover:bg-slate-800"
+                          title="Edit Limit"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span className="font-mono text-slate-300">{formatCurrency(limitObj.limit)}</span>
+                        </button>
+                      )}
+
+                      {/* Delete Category Button */}
+                      <button
+                        onClick={() => setDeleteConfirmCat(cat)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-colors"
+                        title="Delete Category"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+
+                </div>
               </div>
 
               {/* Numbers Row */}

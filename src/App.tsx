@@ -140,6 +140,29 @@ export const App: React.FC = () => {
     showToast(`Category for "${updatedTx.title}" updated to ${updatedTx.category}`, 'success');
   };
 
+  // Add New Category
+  const handleAddCategory = (categoryName: string, initialLimit: number) => {
+    const trimmed = categoryName.trim();
+    if (!trimmed) return;
+
+    if (budgetLimits.some((b) => b.category.toLowerCase() === trimmed.toLowerCase())) {
+      showToast(`Category "${trimmed}" already exists`, 'danger');
+      return;
+    }
+
+    setBudgetLimits((prev) => [...prev, { category: trimmed, limit: initialLimit }]);
+    showToast(`Added new category "${trimmed}" with $${initialLimit} budget limit`, 'success');
+  };
+
+  // Delete Category
+  const handleDeleteCategory = (categoryName: string) => {
+    setBudgetLimits((prev) => prev.filter((b) => b.category !== categoryName));
+    setTransactions((prev) =>
+      prev.map((t) => (t.category === categoryName ? { ...t, category: 'TBD' } : t))
+    );
+    showToast(`Category "${categoryName}" deleted`, 'info');
+  };
+
   // Count categories over budget
   const expenseByCategory = transactions
     .filter((t) => t.type === 'expense')
@@ -211,6 +234,8 @@ export const App: React.FC = () => {
             transactions={transactions}
             budgetLimits={budgetLimits}
             onUpdateLimit={handleUpdateBudgetLimit}
+            onAddCategory={handleAddCategory}
+            onDeleteCategory={handleDeleteCategory}
           />
         )}
 
@@ -244,6 +269,7 @@ export const App: React.FC = () => {
         }}
         onSave={handleSaveTransaction}
         editingTransaction={editingTransaction}
+        availableCategories={budgetLimits.map((b) => b.category)}
       />
 
       {/* Statement Upload Modal */}

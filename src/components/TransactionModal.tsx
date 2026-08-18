@@ -8,6 +8,7 @@ interface TransactionModalProps {
   onClose: () => void;
   onSave: (transaction: Omit<Transaction, 'id'> & { id?: string }) => void;
   editingTransaction?: Transaction | null;
+  availableCategories?: string[];
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
@@ -15,7 +16,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   onClose,
   onSave,
   editingTransaction,
+  availableCategories,
 }) => {
+  const categoryList = availableCategories && availableCategories.length > 0 ? availableCategories : CATEGORIES;
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<TransactionType>('expense');
@@ -201,7 +204,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               onChange={(e) => setCategory(e.target.value as Category)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-100 text-sm focus:outline-none focus:border-emerald-500 transition-colors appearance-none cursor-pointer"
             >
-              {CATEGORIES.map((cat) => (
+              {categoryList.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>

@@ -129,3 +129,13 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   'Miscellaneous': '#64748b',
   'TBD': '#94a3b8',
 };
+
+export const getCategoryColor = (category: Category): string => {
+  if (CATEGORY_COLORS[category]) return CATEGORY_COLORS[category];
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 55%)`;
+};
