@@ -55,9 +55,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setError('Please provide a transaction description.');
       return;
     }
-    const numAmount = parseFloat(amount);
+    const cleanAmountStr = amount.replace(/[^0-9.-]/g, '');
+    const numAmount = parseFloat(cleanAmountStr);
     if (isNaN(numAmount) || numAmount <= 0) {
-      setError('Please enter a valid amount greater than $0.');
+      setError('Please enter a valid amount in US dollars (e.g. 50.00 or $50.00).');
       return;
     }
     if (!date) {
@@ -169,10 +170,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 Amount ($) *
               </label>
               <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="0.00"
+                type="text"
+                inputMode="decimal"
+                placeholder="$0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:border-emerald-500 transition-colors font-mono"

@@ -91,7 +91,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   };
 
   const handleSaveEdit = (category: Category) => {
-    const val = parseFloat(tempLimit);
+    const clean = tempLimit.replace(/[^0-9.-]/g, '');
+    const val = parseFloat(clean);
     if (!isNaN(val) && val >= 0) {
       onUpdateLimit(category, val);
     }
@@ -104,9 +105,10 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       setAddError('Category name is required.');
       return;
     }
-    const val = parseFloat(newCatLimit);
+    const clean = newCatLimit.replace(/[^0-9.-]/g, '');
+    const val = parseFloat(clean);
     if (isNaN(val) || val < 0) {
-      setAddError('Limit must be a valid positive number.');
+      setAddError('Limit must be a valid positive amount in US dollars (e.g. 300.00 or $300.00).');
       return;
     }
 
@@ -274,10 +276,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 Monthly Budget Limit ($) *
               </label>
               <input
-                type="number"
-                step="25"
-                min="0"
-                placeholder="300"
+                type="text"
+                inputMode="decimal"
+                placeholder="$300.00"
                 value={newCatLimit}
                 onChange={(e) => setNewCatLimit(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700/80 text-slate-100 text-xs font-mono focus:outline-none focus:border-emerald-500"
@@ -363,12 +364,12 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                         {editingCategory === cat ? (
                           <div className="flex items-center gap-1">
                             <input
-                              type="number"
-                              step="25"
-                              min="0"
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="$0.00"
                               value={tempLimit}
                               onChange={(e) => setTempLimit(e.target.value)}
-                              className="w-20 px-2 py-1 rounded-lg bg-slate-900 border border-emerald-500 text-slate-100 text-xs font-mono focus:outline-none"
+                              className="w-24 px-2 py-1 rounded-lg bg-slate-900 border border-emerald-500 text-slate-100 text-xs font-mono focus:outline-none"
                             />
                             <button
                               onClick={() => handleSaveEdit(cat)}
