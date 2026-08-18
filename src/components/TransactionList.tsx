@@ -22,6 +22,7 @@ interface TransactionListProps {
   onOpenEditModal: (transaction: Transaction) => void;
   onDeleteTransaction: (id: string) => void;
   onUpdateTransaction?: (transaction: Transaction) => void;
+  availableCategories?: string[];
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
@@ -31,7 +32,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   onOpenEditModal,
   onDeleteTransaction,
   onUpdateTransaction,
+  availableCategories,
 }) => {
+  const activeCategories = availableCategories && availableCategories.length > 0 ? availableCategories : CATEGORIES;
   const [filters, setFilters] = useState<FilterOptions>({
     searchQuery: '',
     category: 'all',
@@ -208,7 +211,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900/80 border border-slate-700/60 text-slate-200 text-sm focus:outline-none focus:border-emerald-500/80 transition-colors appearance-none cursor-pointer"
             >
               <option value="all">All Categories</option>
-              {CATEGORIES.map((cat) => (
+              {activeCategories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -377,12 +380,12 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                         <option value="" className="text-amber-400 italic font-bold">
                           -- Unassigned --
                         </option>
-                        {(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((c) => (
+                        {(tx.type === 'income' ? INCOME_CATEGORIES : activeCategories.filter((c) => !INCOME_CATEGORIES.includes(c))).map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>
                         ))}
-                        {tx.category && !(tx.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).includes(tx.category) && (
+                        {tx.category && !activeCategories.includes(tx.category) && (
                           <option value={tx.category}>{tx.category}</option>
                         )}
                       </select>

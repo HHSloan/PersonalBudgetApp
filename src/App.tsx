@@ -213,6 +213,7 @@ export const App: React.FC = () => {
         {activeTab === 'transactions' && (
           <TransactionList
             transactions={transactions}
+            availableCategories={budgetLimits.map((b) => b.category)}
             onOpenAddModal={() => {
               setEditingTransaction(null);
               setIsModalOpen(true);
